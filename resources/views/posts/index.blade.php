@@ -1232,48 +1232,33 @@
         </div>
     </header>
 
+    <!--Start Body here-->
 
-    <div class="w-full text-center py-32">
-        <h1 class="text-2xl md:text-3xl font-bold text-center lg:text-5xl text-gray-700">
-            Welcome to <span class="text-yellow-500">&lt;LanPort&gt;</span> <span class="text-gray-900"> News</span>
-        </h1>
-        <p class="text-gray-500 text-lg mt-1">Best Blog in the universe</p>
-        <a class="px-3 py-2 text-lg text-white bg-gray-800 rounded mt-5 inline-block"
-            href="http://127.0.0.1:8000/blog">Start
-            Reading</a>
-    </div>
 
-    <div class="mb-10 w-full">
-        <div class="mb-16">
-            <h2 class="mt-16 mb-5 text-3xl text-yellow-500 font-bold">Featured Posts</h2>
-            <div class="w-full">
-                <div class="grid grid-cols-3 gap-10 w-full">
-                    @foreach ($featuredPosts as $post)
-                        <div class="md:col-span-1 col-span-3">
-                            <x-posts.post-card :post="$post" />
+    <body class="font-light antialiased">
+        <main class="container mx-auto px-5 flex flex-grow">
+            <div class="w-full grid grid-cols-4 gap-10">
+                <div class="md:col-span-3 col-span-4">
+                    <livewire:post-list />
+                    {{-- @livewire('post-list') //same thing --}}
+                </div>
+                <div id="side-bar"
+                    class="border-t border-t-gray-100 md:border-t-none col-span-4 md:col-span-1 px-3 md:px-6  space-y-10 py-6 pt-10 md:border-l border-gray-100 h-screen sticky top-0">
+                    <livewire:search-box />
+
+                    <div id="recommended-topics-box">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3">Recommended Topics</h3>
+                        <div class="topics flex flex-wrap justify-start">
+                            <a href="#" class="bg-red-600
+                                        text-white
+                                        rounded-xl px-3 py-1 text-base">
+                                Tailwind</a>
                         </div>
-                    @endforeach
+                    </div>
                 </div>
             </div>
-            <a class="mt-10 block text-center text-lg text-yellow-500 font-semibold"
-                href="http://127.0.0.1:8000/blog">More
-                Posts</a>
-        </div>
-        <hr>
-
-        <h2 class="mt-16 mb-5 text-3xl text-yellow-500 font-bold">Latest Posts</h2>
-        <div class="w-full mb-5">
-            <div class="grid grid-cols-3 gap-10 w-full">
-                @foreach ($latestPosts as $post)
-                    <div class="md:col-span-1 col-span-3">
-                        <x-posts.post-card :post="$post" />
-                    </div>
-                @endforeach
-            </div>
-        </div>
-        <a class="mt-10 block text-center text-lg text-yellow-500 font-semibold" href="http://127.0.0.1:8000/blog">More
-            Posts</a>
-    </div>
+        </main>
+    </body>
 
     @include('layouts.partials.footer')
 </body>

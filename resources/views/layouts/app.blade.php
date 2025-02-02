@@ -33,6 +33,7 @@
             @endif
 
             <!-- Page Content -->
+            <!-- This show after login process -->
             <main>
                 {{ $slot }}
             </main>
