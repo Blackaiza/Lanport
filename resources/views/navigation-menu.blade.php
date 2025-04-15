@@ -15,6 +15,15 @@
                     <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+
+                    <x-nav-link href="{{ route('team.index') }}" :active="request()->routeIs('team.index')">
+                        {{ __('Team') }}
+                    </x-nav-link>
+
+                    <x-nav-link href="{{ route('competition.index') }}" :active="request()->routeIs('competition.index')">
+                        {{ __('Join a Competition') }}
+                    </x-nav-link>
+
                 </div>
             </div>
 

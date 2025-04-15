@@ -64,4 +64,9 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
         ];
     }
+
+    public function teams()
+    {
+        return $this->hasMany(Team::class, 'leader_id');
+    }
 }

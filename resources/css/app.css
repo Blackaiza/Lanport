@@ -5,3 +5,21 @@
 [x-cloak] {
     display: none;
 }
+
+@layer components {
+    .tournament-bracket .round {
+        @apply relative;
+    }
+
+    .tournament-bracket .match-card {
+        @apply relative z-10;
+    }
+
+    .tournament-bracket .match-card::after {
+        @apply content-[''] absolute top-1/2 -right-8 w-8 h-px bg-gray-300 dark:bg-gray-600;
+    }
+
+    .tournament-bracket .round:last-child .match-card::after {
+        @apply hidden;
+    }
+}

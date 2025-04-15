@@ -34,7 +34,7 @@ class PostResource extends Resource
 {
     protected static ?string $model = Post::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-newspaper';
 
     public static function form(Form $form): Form
     {
@@ -75,13 +75,13 @@ class PostResource extends Resource
                     Select::make('author')
                         ->relationship('author', 'name')
                         ->searchable()
-                        ->default(Auth::id())
+                        //->default(Auth::id())
                         ->visible(fn (string $operation) => $operation !== 'create') // Hide during creation
                         ->required(),
 
-                    Hidden::make('user_id')
-                        ->default(Auth::id()) // Automatically set the user ID when creating
-                        ->visible(fn (string $operation) => $operation === 'create'), // Show only during creation
+                   Hidden::make('user_id')
+                       ->default(Auth::id())
+                       ->visible(fn (string $operation) => $operation === 'create'),
                         //untuk tag
                         Select::make('categories')
                         ->multiple()

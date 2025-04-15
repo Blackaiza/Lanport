@@ -1214,7 +1214,7 @@
     <header class="flex items-center justify-between py-3 px-6 border-b border-gray-100">
         <div id="header-left" class="flex items-center">
             <div class="text-gray-800 font-semibold">
-                <span class="text-yellow-500 text-xl">&lt;YELO&gt;</span> Code
+                <span class="text-yellow-500 text-xl">&lt;LanPort&gt;</span> UKM
             </div>
             @include('layouts.partials.header')
         </div>
@@ -1237,7 +1237,7 @@
         <h1 class="text-2xl md:text-3xl font-bold text-center lg:text-5xl text-gray-700">
             Welcome to <span class="text-yellow-500">&lt;LanPort&gt;</span> <span class="text-gray-900"> News</span>
         </h1>
-        <p class="text-gray-500 text-lg mt-1">Best Blog in the universe</p>
+        <p class="text-gray-500 text-lg mt-1">ESPORT UKM NEWS</p>
         <a class="px-3 py-2 text-lg text-white bg-gray-800 rounded mt-5 inline-block"
             href="http://127.0.0.1:8000/blog">Start
             Reading</a>
