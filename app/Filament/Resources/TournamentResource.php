@@ -26,6 +26,7 @@ class TournamentResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-trophy';
     protected static ?string $navigationGroup = 'Competition Management';
+    protected static ?string $navigationLabel = 'Competition Brackets';
 
     public static function form(Form $form): Form
     {

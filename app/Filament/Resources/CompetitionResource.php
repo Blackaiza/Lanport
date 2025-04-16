@@ -19,6 +19,10 @@ class CompetitionResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    protected static ?string $navigationLabel = 'Register Competition';
+
+    protected static ?string $navigationGroup = 'Competition Management';
+
     public static function form(Form $form): Form
     {
         return $form
