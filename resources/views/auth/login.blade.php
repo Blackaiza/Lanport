@@ -20,44 +20,18 @@
                 <x-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
             </div>
 
-            <div class="max-w-sm">
-                <label class="block text-sm mb-2 dark:text-white">{{ __('Password') }}</label>
+            <div class="mt-4">
+                <x-label for="password" value="{{ __('Password') }}" />
                 <div class="relative">
-                    <input id="hs-toggle-password" type="password" name="password" required autocomplete="current-password"
-                        class="py-2.5 sm:py-3 ps-4 pe-10 block w-full border-gray-200 rounded-lg sm:text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-                        placeholder="Enter password">
-                    <button type="button" onclick="togglePassword()" class="absolute inset-y-0 end-0 flex items-center z-20 px-3 cursor-pointer text-gray-400 rounded-e-md focus:outline-hidden focus:text-blue-600 dark:text-neutral-600 dark:focus:text-blue-500">
-                        <svg id="eyeIcon" class="shrink-0 size-3.5" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path id="eyeOpen" d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
-                            <path id="eyeOpen" d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
-                            <path id="eyeOpen" d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
-                            <line id="eyeOpen" x1="2" x2="22" y1="2" y2="22"></line>
-                            <path id="eyeClosed" class="hidden" d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
-                            <circle id="eyeClosed" class="hidden" cx="12" cy="12" r="3"></circle>
+                    <x-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="current-password" />
+                    <button type="button" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700" onclick="togglePassword('password')">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
                     </button>
                 </div>
             </div>
-
-            <script>
-                function togglePassword() {
-                    const passwordField = document.getElementById("hs-toggle-password");
-                    const eyeOpen = document.querySelectorAll("#eyeOpen");
-                    const eyeClosed = document.getElementById("eyeClosed");
-
-                    if (passwordField.type === "password") {
-                        passwordField.type = "text";
-                        eyeOpen.forEach(e => e.classList.add("hidden"));
-                        eyeClosed.classList.remove("hidden");
-                    } else {
-                        passwordField.type = "password";
-                        eyeOpen.forEach(e => e.classList.remove("hidden"));
-                        eyeClosed.classList.add("hidden");
-                    }
-                }
-            </script>
-
-
 
             <div class="block mt-4">
                 <label for="remember_me" class="flex items-center">
@@ -79,4 +53,20 @@
             </div>
         </form>
     </x-authentication-card>
+
+    <script>
+        function togglePassword(fieldId) {
+            const passwordField = document.getElementById(fieldId);
+            const button = passwordField.nextElementSibling;
+            const icon = button.querySelector('svg');
+
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />';
+            } else {
+                passwordField.type = 'password';
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />';
+            }
+        }
+    </script>
 </x-guest-layout>
