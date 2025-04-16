@@ -13,6 +13,10 @@ class TeamMember extends Model
 
     protected $fillable = ['team_id', 'user_id', 'role'];
 
+    const ROLE_LEADER = 'leader';
+    const ROLE_CO_LEADER = 'co_leader';
+    const ROLE_MEMBER = 'member';
+
     public function team()
     {
         return $this->belongsTo(Team::class);

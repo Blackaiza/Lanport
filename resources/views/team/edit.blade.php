@@ -50,21 +50,22 @@
 
                     <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Edit Team: {{ $team->name }}</h2>
 
+                    @if(auth()->id() === $team->leader_id || $team->members()->where('user_id', auth()->id())->wherePivot('role', 'co_leader')->exists())
                     <form action="{{ route('team.update', $team->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
-                    @csrf
-                    @method('PUT')
+                        @csrf
+                        @method('PUT')
 
                         <!-- Team Picture -->
                         <div class="space-y-2">
                             <label class="text-lg font-medium text-gray-900 dark:text-white">Team Picture</label>
                             <div class="mt-1 flex items-center space-x-6">
-                        @if($team->team_picture)
+                                @if($team->team_picture)
                                     <div class="w-32 h-32 rounded-lg overflow-hidden">
                                         <img src="{{ asset('storage/' . $team->team_picture) }}"
                                              class="w-full h-full object-cover"
                                              alt="Current team picture">
                                     </div>
-                        @endif
+                                @endif
                                 <div class="flex-1">
                                     <label class="flex flex-col items-center px-4 py-6 bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 rounded-lg border-2 border-dashed border-blue-600 dark:border-blue-400 cursor-pointer hover:border-blue-700 dark:hover:border-blue-500">
                                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -75,7 +76,7 @@
                                     </label>
                                 </div>
                             </div>
-                    </div>
+                        </div>
 
                         <!-- Team Name -->
                         <div class="space-y-2">
@@ -85,33 +86,33 @@
                             @error('name')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
-                    </div>
+                        </div>
 
                         <!-- Game Selection -->
                         <div class="space-y-2">
                             <label class="text-lg font-medium text-gray-900 dark:text-white">Game</label>
                             <select name="game" required
                                     class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-transparent dark:bg-gray-700 dark:text-white">
-                            <option value="Valorant" {{ $team->game == 'Valorant' ? 'selected' : '' }}>Valorant</option>
-                            <option value="Mobile Legends" {{ $team->game == 'Mobile Legends' ? 'selected' : '' }}>Mobile Legends</option>
-                        </select>
-                            @error('game')
-                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                    </div>
+                                <option value="Valorant" {{ $team->game == 'Valorant' ? 'selected' : '' }}>Valorant</option>
+                                <option value="Mobile Legends" {{ $team->game == 'Mobile Legends' ? 'selected' : '' }}>Mobile Legends</option>
+                            </select>
+                            @if($errors->has('game'))
+                                <p class="text-red-500 text-sm mt-1">{{ $errors->first('game') }}</p>
+                            @endif
+                        </div>
 
                         <!-- Status -->
                         <div class="space-y-2">
                             <label class="text-lg font-medium text-gray-900 dark:text-white">Team Status</label>
                             <select name="status" required
                                     class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-transparent dark:bg-gray-700 dark:text-white">
-                            <option value="pending" {{ $team->status == 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="active" {{ $team->status == 'active' ? 'selected' : '' }}>Active</option>
-                        </select>
-                            @error('status')
-                                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                            @enderror
-                    </div>
+                                <option value="pending" {{ $team->status == 'pending' ? 'selected' : '' }}>Pending</option>
+                                <option value="active" {{ $team->status == 'active' ? 'selected' : '' }}>Active</option>
+                            </select>
+                            @if($errors->has('status'))
+                                <p class="text-red-500 text-sm mt-1">{{ $errors->first('status') }}</p>
+                            @endif
+                        </div>
 
                         <!-- Submit Button -->
                         <div class="flex justify-end pt-6">
@@ -121,10 +122,15 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                 </svg>
                                 Update Team
-                        </button>
+                            </button>
+                        </div>
+                    </form>
+                    @else
+                    <div class="bg-gray-100 dark:bg-gray-700 p-6 rounded-lg">
+                        <p class="text-gray-600 dark:text-gray-300">You don't have permission to update team information. Only team leaders and co-leaders can modify team details.</p>
                     </div>
-                </form>
-            </div>
+                    @endif
+                </div>
             </div>
 
             <!-- Member Invitations Section -->
@@ -160,36 +166,71 @@
                                                         Team Leader
                                                     </span>
                                                 @else
-                                                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                                        Member
+                                                    <span class="px-2 py-1 text-xs font-medium rounded-full
+                                                        {{ $member->pivot->role === 'co_leader' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' }}">
+                                                        {{ $member->pivot->role === 'co_leader' ? 'Co-Leader' : 'Member' }}
                                                     </span>
-                                        @endif
-                                    </td>
+                                                @endif
+                                            </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 @if($member->id === $team->leader_id)
                                                     <span class="text-sm text-gray-500 dark:text-gray-400 italic">
                                                         Team Creator
-                                        </span>
+                                                    </span>
                                                 @else
-                                                    <form action="{{ route('team.remove-member', [$team->id, $member->id]) }}" method="POST" class="inline">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit"
-                                                                class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                                                                onclick="return confirm('Are you sure you want to remove this member?')">
-                                                            Remove
-                                                        </button>
-                                                    </form>
+                                                    @if(auth()->id() === $team->leader_id)
+                                                        <div class="flex space-x-2">
+                                                            @if($member->pivot->role === 'member')
+                                                                <form action="{{ route('team.promote-member', [$team->id, $member->id]) }}" method="POST" class="inline">
+                                                                    @csrf
+                                                                    <button type="submit" class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300">
+                                                                        Promote to Co-Leader
+                                                                    </button>
+                                                                </form>
+                                                            @elseif($member->pivot->role === 'co_leader')
+                                                                <form action="{{ route('team.demote-member', [$team->id, $member->id]) }}" method="POST" class="inline">
+                                                                    @csrf
+                                                                    <button type="submit" class="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300">
+                                                                        Demote to Member
+                                                                    </button>
+                                                                </form>
+                                                                <form action="{{ route('team.transfer-ownership', [$team->id, $member->id]) }}" method="POST" class="inline">
+                                                                    @csrf
+                                                                    <button type="submit" class="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300"
+                                                                            onclick="return confirm('Are you sure you want to transfer team ownership to this co-leader?')">
+                                                                        Transfer Ownership
+                                                                    </button>
+                                                                </form>
+                                                            @endif
+                                                            <form action="{{ route('team.remove-member', [$team->id, $member->id]) }}" method="POST" class="inline">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                                                        onclick="return confirm('Are you sure you want to remove this member?')">
+                                                                    Remove
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    @elseif(auth()->id() === $member->id)
+                                                        <form action="{{ route('team.leave', $team->id) }}" method="POST" class="inline">
+                                                            @csrf
+                                                            <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                                                    onclick="return confirm('Are you sure you want to leave this team?')">
+                                                                Leave Team
+                                                            </button>
+                                                        </form>
+                                                    @endif
                                                 @endif
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
                     <!-- Pending Invitations -->
+                    @if(auth()->id() === $team->leader_id || $team->members()->where('user_id', auth()->id())->wherePivot('role', 'co_leader')->exists())
                     <div class="mb-8">
                         <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Pending Invitations</h4>
                         <div class="overflow-x-auto">
@@ -203,7 +244,13 @@
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
-                                    @forelse($team->invitations as $invitation)
+                                    @php
+                                        $memberEmails = $team->members->pluck('email')->toArray();
+                                        $filteredInvitations = $team->invitations->filter(function($invitation) use ($memberEmails) {
+                                            return !in_array($invitation->email, $memberEmails);
+                                        });
+                                    @endphp
+                                    @forelse($filteredInvitations as $invitation)
                                         <tr>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="text-sm text-gray-900 dark:text-white">{{ $invitation->email }}</div>
@@ -239,8 +286,10 @@
                             </table>
                         </div>
                     </div>
+                    @endif
 
                     <!-- Available Users to Invite -->
+                    @if(auth()->id() === $team->leader_id || $team->members()->where('user_id', auth()->id())->wherePivot('role', 'co_leader')->exists())
                     <div>
                         <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Invite Users</h4>
                         <div class="mb-4">
@@ -249,9 +298,15 @@
                                 <input type="email" name="email"
                                        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                                        placeholder="Enter email address">
-                                <button type="submit"
-                                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                                    Send Invitation
+                                <button type="submit" id="inviteButton"
+                                        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 relative">
+                                    <span class="invite-text">Send Invitation</span>
+                                    <span class="invite-loading hidden">
+                                        <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                    </span>
                                 </button>
                             </form>
                         </div>
@@ -279,8 +334,8 @@
                                                     <input type="hidden" name="email" value="{{ $user->email }}">
                                                     <button type="submit" class="text-blue-600 hover:text-blue-900">
                                                         Invite
-                    </button>
-                </form>
+                                                    </button>
+                                                </form>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -288,6 +343,7 @@
                             </table>
                         </div>
                     </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -366,4 +422,18 @@
             modal.classList.add('hidden');
         }
     }
+
+    // Invite button loading animation
+    document.addEventListener('DOMContentLoaded', function() {
+        const inviteForm = document.querySelector('form[action*="team.invite"]');
+        const inviteButton = document.getElementById('inviteButton');
+        const inviteText = inviteButton.querySelector('.invite-text');
+        const inviteLoading = inviteButton.querySelector('.invite-loading');
+
+        inviteForm.addEventListener('submit', function() {
+            inviteText.classList.add('hidden');
+            inviteLoading.classList.remove('hidden');
+            inviteButton.disabled = true;
+        });
+    });
 </script>

@@ -37,6 +37,10 @@ Route::middleware([
     Route::post('/team/{team}/invite', [TeamController::class, 'invite'])->name('team.invite');
     Route::delete('/team/{team}/member/{member}', [TeamController::class, 'removeMember'])->name('team.remove-member');
     Route::delete('/team/{team}/invitation/{invitation}', [TeamController::class, 'cancelInvitation'])->name('team.cancel-invitation');
+    Route::post('/team/{team}/member/{member}/promote', [TeamController::class, 'promoteMember'])->name('team.promote-member');
+    Route::post('/team/{team}/member/{member}/demote', [TeamController::class, 'demoteMember'])->name('team.demote-member');
+    Route::post('/team/{team}/member/{member}/transfer-ownership', [TeamController::class, 'transferOwnership'])->name('team.transfer-ownership');
+    Route::post('/team/{team}/leave', [TeamController::class, 'leaveTeam'])->name('team.leave');
 
     // Team invitation routes
     Route::get('/team/accept-invitation/{token}', [TeamController::class, 'acceptInvitation'])

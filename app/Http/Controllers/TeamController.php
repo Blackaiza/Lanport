@@ -90,8 +90,84 @@ class TeamController extends Controller
             return back()->with('error', 'The team leader cannot be removed from the team.');
         }
 
+        // Check if user has permission to remove members
+        if (auth()->id() !== $team->leader_id && auth()->id() !== $member->id) {
+            return back()->with('error', 'You do not have permission to remove this member.');
+        }
+
         $team->members()->detach($member->id);
         return back()->with('success', 'Member removed successfully.');
+    }
+
+    public function promoteMember(Team $team, User $member)
+    {
+        // Check if user is the team leader
+        if (auth()->id() !== $team->leader_id) {
+            return back()->with('error', 'Only the team leader can promote members.');
+        }
+
+        // Check if member is already a co-leader
+        if ($team->members()->where('user_id', $member->id)->wherePivot('role', 'co_leader')->exists()) {
+            return back()->with('error', 'This member is already a co-leader.');
+        }
+
+        $team->members()->updateExistingPivot($member->id, ['role' => 'co_leader']);
+        return back()->with('success', 'Member promoted to co-leader successfully.');
+    }
+
+    public function demoteMember(Team $team, User $member)
+    {
+        // Check if user is the team leader
+        if (auth()->id() !== $team->leader_id) {
+            return back()->with('error', 'Only the team leader can demote members.');
+        }
+
+        // Check if member is a co-leader
+        if (!$team->members()->where('user_id', $member->id)->wherePivot('role', 'co_leader')->exists()) {
+            return back()->with('error', 'This member is not a co-leader.');
+        }
+
+        $team->members()->updateExistingPivot($member->id, ['role' => 'member']);
+        return back()->with('success', 'Co-leader demoted to member successfully.');
+    }
+
+    public function transferOwnership(Team $team, User $member)
+    {
+        // Check if user is the team leader
+        if (auth()->id() !== $team->leader_id) {
+            return back()->with('error', 'Only the team leader can transfer ownership.');
+        }
+
+        // Check if member is a co-leader
+        if (!$team->members()->where('user_id', $member->id)->wherePivot('role', 'co_leader')->exists()) {
+            return back()->with('error', 'You can only transfer ownership to a co-leader.');
+        }
+
+        try {
+            \DB::transaction(function () use ($team, $member) {
+                // Update team leader
+                $team->update(['leader_id' => $member->id]);
+
+                // Update roles
+                $team->members()->updateExistingPivot($member->id, ['role' => 'leader']);
+                $team->members()->updateExistingPivot(auth()->id(), ['role' => 'co_leader']);
+            });
+
+            return back()->with('success', 'Team ownership transferred successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Failed to transfer team ownership.');
+        }
+    }
+
+    public function leaveTeam(Team $team)
+    {
+        // Check if user is the team leader
+        if (auth()->id() === $team->leader_id) {
+            return back()->with('error', 'The team leader cannot leave the team. Please transfer ownership first.');
+        }
+
+        $team->members()->detach(auth()->id());
+        return redirect()->route('dashboard')->with('success', 'You have left the team successfully.');
     }
 
     public function destroy(Team $team)
@@ -112,6 +188,11 @@ class TeamController extends Controller
 
     public function edit(Team $team)
     {
+        // Load the team's members with their roles
+        $team->load(['members' => function($query) {
+            $query->withPivot('role');
+        }]);
+
         $availableUsers = User::whereNotIn('id', $team->members->pluck('id'))
             ->whereNotIn('email', $team->invitations->pluck('email'))
             ->get();
