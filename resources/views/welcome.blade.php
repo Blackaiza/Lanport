@@ -1221,11 +1221,11 @@
         <div id="header-right" class="flex items-center md:space-x-6">
             <div class="flex space-x-5">
                 <a class="flex space-x-2 items-center hover:text-yellow-500 text-sm text-gray-500"
-                    href="http://127.0.0.1:8000/login">
+                    href="{{ url('/login') }}">
                     Login
                 </a>
                 <a class="flex space-x-2 items-center hover:text-yellow-500 text-sm text-gray-500"
-                    href="http://127.0.0.1:8000/register">
+                    href="{{ url('/register') }}">
                     Register
                 </a>
             </div>
@@ -1239,7 +1239,7 @@
         </h1>
         <p class="text-gray-500 text-lg mt-1">ESPORT UKM NEWS</p>
         <a class="px-3 py-2 text-lg text-white bg-gray-800 rounded mt-5 inline-block"
-            href="http://127.0.0.1:8000/blog">Start
+            href="{{ url('/blog') }}">Start
             Reading</a>
     </div>
 
@@ -1256,7 +1256,7 @@
                 </div>
             </div>
             <a class="mt-10 block text-center text-lg text-yellow-500 font-semibold"
-                href="http://127.0.0.1:8000/blog">More
+                href="{{ url('/blog') }}">More
                 Posts</a>
         </div>
         <hr>
@@ -1271,7 +1271,7 @@
                 @endforeach
             </div>
         </div>
-        <a class="mt-10 block text-center text-lg text-yellow-500 font-semibold" href="http://127.0.0.1:8000/blog">More
+        <a class="mt-10 block text-center text-lg text-yellow-500 font-semibold" href="{{ url('/blog') }}">More
             Posts</a>
     </div>
 

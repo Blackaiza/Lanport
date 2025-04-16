@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -10,7 +11,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
     use HasApiTokens;
 
@@ -68,5 +69,12 @@ class User extends Authenticatable implements MustVerifyEmail
     public function teams()
     {
         return $this->hasMany(Team::class, 'leader_id');
+    }
+
+    public function canAccessPanel(\Filament\Panel $panel): bool
+    {
+        // For now, allow all users to access the panel
+        // You can modify this to add specific conditions
+        return true;
     }
 }

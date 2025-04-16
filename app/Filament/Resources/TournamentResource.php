@@ -894,7 +894,7 @@ class TournamentResource extends Resource
         SingleEliminationFormat::generate($competition, $teams);
     }
 
-    protected static function completeRound(Competition $competition, string $round, int $numTeams = null)
+    protected static function completeRound(Competition $competition, string $round, ?int $numTeams = null)
     {
         if ($competition->tournament_type === 'single_elimination') {
             SingleEliminationFormat::completeRound($competition, $round, $numTeams);

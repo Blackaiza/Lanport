@@ -13,7 +13,7 @@
                 <span class="text-gray-500 text-xs">. {{ $post->published_at->diffForHumans() }}</span>
             </div>
             <h2 class="text-xl font-bold text-gray-900">
-                <a href="http://127.0.0.1:8000/blog/first%20post">
+            <a href="{{ config('app.url') }}/blog/first%20post">
                     {{ $post->title }}
                 </a>
             </h2>

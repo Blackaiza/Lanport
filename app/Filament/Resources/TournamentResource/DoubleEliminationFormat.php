@@ -171,7 +171,7 @@ class DoubleEliminationFormat
         ]);
     }
 
-    public static function completeRound(Competition $competition, string $round, int $numTeams = null)
+    public static function completeRound(Competition $competition, string $round, ?int $numTeams = null)
     {
         $matches = TournamentMatch::where('competition_id', $competition->id)
             ->where('round', $round)
