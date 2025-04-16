@@ -60,7 +60,17 @@ class GameDatabaseResource extends Resource
                                             ->maxLength(255)
                                             ->label('Database Name')
                                             ->helperText('Must start with db_game_ and contain only lowercase letters, numbers, and underscores')
-                                            ->disabled(fn ($record) => $record?->is_created ?? false),
+                                            ->disabled(fn ($record) => $record?->is_created ?? false)
+                                            ->afterStateUpdated(function ($state, Forms\Set $set) {
+                                                if ($state && !preg_match('/^db_game_[a-z0-9_]+$/', $state)) {
+                                                    Notification::make()
+                                                        ->title('Invalid Database Name Format')
+                                                        ->body('Database name must start with db_game_ and contain only lowercase letters, numbers, and underscores')
+                                                        ->warning()
+                                                        ->send();
+                                                    $set('database_name', '');
+                                                }
+                                            }),
                                     ])
                                     ->columns(1),
 
