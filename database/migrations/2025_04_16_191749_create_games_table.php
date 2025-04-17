@@ -16,8 +16,10 @@ return new class extends Migration
             $table->string('game_id')->unique();
             $table->string('name');
             $table->string('picture')->nullable();
-            $table->string('database_name')->nullable()->unique();
+            $table->string('database_name')->unique();
+            $table->string('credential_database_name')->unique();
             $table->json('parameters')->nullable();
+            $table->json('credential_parameters')->nullable();
             $table->boolean('is_created')->default(false);
             $table->timestamps();
         });
