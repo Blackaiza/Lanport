@@ -19,7 +19,13 @@ class Competition extends Model
         'tournament_end',
         'team_count',
         'status',
-        'tournament_type'
+        'tournament_type',
+        'game_id',
+        'whatsapp_link',
+        'telegram_link',
+        'discord_link',
+        'prize_pool',
+        'require_player_id'
     ];
 
     protected $casts = [
@@ -27,6 +33,8 @@ class Competition extends Model
         'registration_end' => 'datetime',
         'tournament_start' => 'datetime',
         'tournament_end' => 'datetime',
+        'prize_pool' => 'array',
+        'require_player_id' => 'boolean'
     ];
 
     public function teamCompetitions(): HasMany
@@ -39,6 +47,11 @@ class Competition extends Model
         return $this->belongsToMany(Team::class, 'team_competitions')
             ->withPivot('status', 'rejection_reason')
             ->withTimestamps();
+    }
+
+    public function game()
+    {
+        return $this->belongsTo(Game::class, 'game_id', 'game_id');
     }
 
     public function approvedTeams()
