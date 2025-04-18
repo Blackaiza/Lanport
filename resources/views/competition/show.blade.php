@@ -143,6 +143,181 @@
                         </div>
                     </div>
 
+                    <!-- Social Media Links -->
+                    @if($competition->whatsapp_link || $competition->telegram_link || $competition->discord_link)
+                    <div class="mt-8">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Join Our Community</h2>
+                        <div class="flex flex-wrap gap-4">
+                            @if($competition->whatsapp_link)
+                            <a href="{{ $competition->whatsapp_link }}" target="_blank"
+                               class="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                                </svg>
+                                WhatsApp Group
+                            </a>
+                            @endif
+
+                            @if($competition->telegram_link)
+                            <a href="{{ $competition->telegram_link }}" target="_blank"
+                               class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.871 4.326-2.962-.924c-.643-.203-.657-.643.136-.953l11.566-4.458c.534-.197 1.001.13.832.941z"/>
+                                </svg>
+                                Telegram Group
+                            </a>
+                            @endif
+
+                            @if($competition->discord_link)
+                            <a href="{{ $competition->discord_link }}" target="_blank"
+                               class="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1 .008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1 .006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
+                                </svg>
+                                Discord Server
+                            </a>
+                            @endif
+                        </div>
+                    </div>
+                    @endif
+
+                    <!-- Prize Pool -->
+                    @if($competition->prize_pool)
+                    <div class="mt-8">
+                        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Prize Pool</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            @foreach($competition->prize_pool as $prize)
+                            <div class="rounded-lg p-4 @switch($prize['position'])
+                                    @case(1)
+                                        bg-gradient-to-br from-yellow-400 to-yellow-600 dark:from-yellow-500 dark:to-yellow-700
+                                        @break
+                                    @case(2)
+                                        bg-gradient-to-br from-gray-300 to-gray-400 dark:from-gray-400 dark:to-gray-500
+                                        @break
+                                    @case(3)
+                                        bg-gradient-to-br from-amber-600 to-amber-800 dark:from-amber-700 dark:to-amber-900
+                                        @break
+                                    @default
+                                        bg-gray-50 dark:bg-gray-700
+                                @endswitch">
+                                <div class="font-semibold @switch($prize['position'])
+                                        @case(1)
+                                            text-white
+                                            @break
+                                        @case(2)
+                                            text-white
+                                            @break
+                                        @case(3)
+                                            text-white
+                                            @break
+                                        @default
+                                            text-gray-900 dark:text-white
+                                    @endswitch">
+                                    @switch($prize['position'])
+                                        @case(1)
+                                            Winner
+                                            @break
+                                        @case(2)
+                                            Second Place
+                                            @break
+                                        @case(3)
+                                            Third Place
+                                            @break
+                                        @default
+                                            {{ $prize['position'] }}th Place
+                                    @endswitch
+                                </div>
+                                <div class="mt-2 space-y-2">
+                                    @if(in_array('money', $prize['prize_types']))
+                                    <div class="flex items-center @switch($prize['position'])
+                                            @case(1)
+                                                text-white
+                                                @break
+                                            @case(2)
+                                                text-white
+                                                @break
+                                            @case(3)
+                                                text-white
+                                                @break
+                                            @default
+                                                text-gray-600 dark:text-gray-300
+                                        @endswitch">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        RM {{ number_format($prize['money_amount'], 2) }}
+                                    </div>
+                                    @endif
+
+                                    @if(in_array('diamond', $prize['prize_types']))
+                                    <div class="flex items-center @switch($prize['position'])
+                                            @case(1)
+                                                text-white
+                                                @break
+                                            @case(2)
+                                                text-white
+                                                @break
+                                            @case(3)
+                                                text-white
+                                                @break
+                                            @default
+                                                text-gray-600 dark:text-gray-300
+                                        @endswitch">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                        </svg>
+                                        {{ $prize['diamond_amount'] }} Diamonds
+                                    </div>
+                                    @endif
+
+                                    @if(in_array('hamper', $prize['prize_types']))
+                                    <div class="flex items-center @switch($prize['position'])
+                                            @case(1)
+                                                text-white
+                                                @break
+                                            @case(2)
+                                                text-white
+                                                @break
+                                            @case(3)
+                                                text-white
+                                                @break
+                                            @default
+                                                text-gray-600 dark:text-gray-300
+                                        @endswitch">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                        </svg>
+                                        {{ $prize['hamper_description'] }}
+                                    </div>
+                                    @endif
+
+                                    @if(in_array('other', $prize['prize_types']))
+                                    <div class="flex items-center @switch($prize['position'])
+                                            @case(1)
+                                                text-white
+                                                @break
+                                            @case(2)
+                                                text-white
+                                                @break
+                                            @case(3)
+                                                text-white
+                                                @break
+                                            @default
+                                                text-gray-600 dark:text-gray-300
+                                        @endswitch">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                        </svg>
+                                        {{ $prize['other_prize'] }}
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
+
                     <!-- Registered Teams -->
                     <div class="mt-8">
                         <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Registered Teams</h2>
