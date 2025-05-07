@@ -26,6 +26,11 @@ class Team extends Model
                     ->withTimestamps();
     }
 
+    public function players()
+    {
+        return $this->members()->wherePivot('role', 'member');
+    }
+
     public function invitations()
     {
         return $this->hasMany(TeamInvitation::class);
@@ -34,6 +39,11 @@ class Team extends Model
     public function leader()
     {
         return $this->belongsTo(User::class, 'leader_id');
+    }
+
+    public function game()
+    {
+        return $this->belongsTo(Game::class, 'game', 'game_id');
     }
 
     public function competitions(): BelongsToMany

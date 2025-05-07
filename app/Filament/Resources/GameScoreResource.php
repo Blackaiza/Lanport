@@ -12,6 +12,8 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use App\Models\Team;
+use App\Models\TeamCompetition;
 
 class GameScoreResource extends Resource
 {
@@ -26,47 +28,84 @@ class GameScoreResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('game_id')
-                    ->relationship('game', 'name')
-                    ->required()
-                    ->label('Game'),
                 Forms\Components\Select::make('competition_id')
-                    ->relationship('competition', 'title')
+                    ->label('Tournament')
+                    ->options(Competition::pluck('title', 'id'))
                     ->required()
-                    ->label('Competition'),
-                Forms\Components\TextInput::make('name')
+                    ->reactive()
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        if ($state) {
+                            $competition = Competition::find($state);
+                            if ($competition) {
+                                $set('game_id', $competition->game_id);
+                            }
+                        }
+                    }),
+
+                Forms\Components\Select::make('game_id')
+                    ->label('Game Type')
+                    ->options(Game::pluck('name', 'game_id'))
                     ->required()
-                    ->maxLength(255)
-                    ->label('Name'),
-                Forms\Components\Select::make('best_of')
-                    ->options([
-                        1 => 'B01',
-                        2 => 'B02',
-                        3 => 'B03',
-                        5 => 'B05',
-                        7 => 'B07',
+                    ->disabled(),
+
+                Forms\Components\Select::make('team_id')
+                    ->label('Team')
+                    ->options(function (callable $get) {
+                        $competitionId = $get('competition_id');
+                        if (!$competitionId) {
+                            return [];
+                        }
+
+                        return TeamCompetition::where('competition_id', $competitionId)
+                            ->where('status', 'approved')
+                            ->with('team')
+                            ->get()
+                            ->pluck('team.name', 'team.id');
+                    })
+                    ->required()
+                    ->reactive()
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        if ($state) {
+                            $team = Team::with('players')->find($state);
+                            if ($team) {
+                                $set('players', $team->players);
+                            }
+                        }
+                    }),
+
+                Forms\Components\Repeater::make('player_scores')
+                    ->schema([
+                        Forms\Components\Select::make('player_id')
+                            ->label('Player')
+                            ->options(function (callable $get) {
+                                $teamId = $get('../../team_id');
+                                if (!$teamId) {
+                                    return [];
+                                }
+
+                                $team = Team::with('players')->find($teamId);
+                                return $team && $team->players ? $team->players->pluck('name', 'id') : [];
+                            })
+                            ->required(),
+
+                        Forms\Components\TextInput::make('kills')
+                            ->numeric()
+                            ->label('Kills')
+                            ->required(),
+
+                        Forms\Components\TextInput::make('deaths')
+                            ->numeric()
+                            ->label('Deaths')
+                            ->required(),
+
+                        Forms\Components\TextInput::make('assists')
+                            ->numeric()
+                            ->label('Assists')
+                            ->required(),
                     ])
-                    ->required()
-                    ->label('Best Of')
-                    ->live(),
-                Forms\Components\TextInput::make('max_round')
-                    ->disabled()
-                    ->label('Max Round'),
-                Forms\Components\TextInput::make('winner')
-                    ->disabled()
-                    ->label('Winner (Rounds to Win)'),
-                Forms\Components\Select::make('condition')
-                    ->options([
-                        'win' => 'Win',
-                        'draw' => 'Draw',
-                        'lose' => 'Lose',
-                    ])
-                    ->required()
-                    ->label('Condition'),
-                Forms\Components\TextInput::make('score')
-                    ->numeric()
-                    ->required()
-                    ->label('Score'),
+                    ->columns(4)
+                    ->label('Player Scores')
+                    ->visible(fn (callable $get) => $get('team_id') !== null),
             ]);
     }
 
@@ -74,57 +113,35 @@ class GameScoreResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('game.name')
-                    ->searchable()
-                    ->sortable()
-                    ->label('Game'),
                 Tables\Columns\TextColumn::make('competition.title')
-                    ->searchable()
-                    ->sortable()
-                    ->label('Competition'),
-                Tables\Columns\TextColumn::make('name')
+                    ->label('Tournament')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('best_of')
-                    ->formatStateUsing(fn ($state) => 'B' . str_pad($state, 2, '0', STR_PAD_LEFT))
+                Tables\Columns\TextColumn::make('game.name')
+                    ->label('Game Type')
                     ->searchable()
-                    ->sortable()
-                    ->label('Best Of'),
-                Tables\Columns\TextColumn::make('max_round')
-                    ->searchable()
-                    ->sortable()
-                    ->label('Max Round'),
-                Tables\Columns\TextColumn::make('winner')
-                    ->searchable()
-                    ->sortable()
-                    ->label('Winner'),
-                Tables\Columns\TextColumn::make('condition')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'win' => 'success',
-                        'draw' => 'warning',
-                        'lose' => 'danger',
-                    })
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('team.name')
+                    ->label('Team')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('score')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+                    ->label('Total Score')
                     ->sortable(),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('competition_id')
+                    ->label('Tournament')
+                    ->options(Competition::pluck('title', 'id')),
+                Tables\Filters\SelectFilter::make('game_id')
+                    ->label('Game Type')
+                    ->options(Game::pluck('name', 'game_id')),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
 

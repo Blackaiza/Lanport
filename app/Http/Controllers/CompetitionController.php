@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Competition;
 use App\Models\TeamCompetition;
 use App\Models\Team;
+use Illuminate\Support\Facades\DB;
 
 class CompetitionController extends Controller
 {
@@ -59,6 +60,27 @@ class CompetitionController extends Controller
 
         if ($existingRegistration) {
             return back()->with('error', 'This team is already registered for this competition.');
+        }
+
+        // Check for player duplication
+        $teamMembers = $team->members()->pluck('users.id');
+        $existingTeams = TeamCompetition::where('competition_id', $competition->id)
+            ->where('status', '!=', 'rejected')
+            ->pluck('team_id');
+
+        $duplicatePlayers = DB::table('team_members')
+            ->whereIn('team_id', $existingTeams)
+            ->whereIn('user_id', $teamMembers)
+            ->select('user_id', 'team_id')
+            ->get();
+
+        if ($duplicatePlayers->isNotEmpty()) {
+            $duplicatePlayerIds = $duplicatePlayers->pluck('user_id')->unique();
+            $duplicatePlayersInfo = User::whereIn('id', $duplicatePlayerIds)
+                ->pluck('name')
+                ->toArray();
+
+            return back()->with('error', 'Some players in your team are already registered in this competition with other teams: ' . implode(', ', $duplicatePlayersInfo));
         }
 
         // Check if competition is full

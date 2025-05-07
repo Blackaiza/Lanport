@@ -93,8 +93,12 @@
                             <label class="text-lg font-medium text-gray-900 dark:text-white">Game</label>
                             <select name="game" required
                                     class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-transparent dark:bg-gray-700 dark:text-white">
-                                <option value="Valorant" {{ $team->game == 'Valorant' ? 'selected' : '' }}>Valorant</option>
-                                <option value="Mobile Legends" {{ $team->game == 'Mobile Legends' ? 'selected' : '' }}>Mobile Legends</option>
+                                <option value="">Select a game</option>
+                                @foreach(\App\Models\Game::all() as $game)
+                                    <option value="{{ $game->game_id }}" {{ $team->game == $game->game_id ? 'selected' : '' }}>
+                                        {{ $game->name }}
+                                    </option>
+                                @endforeach
                             </select>
                             @if($errors->has('game'))
                                 <p class="text-red-500 text-sm mt-1">{{ $errors->first('game') }}</p>

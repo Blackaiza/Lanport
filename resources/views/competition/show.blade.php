@@ -32,7 +32,13 @@
                             {{ $competition->title }}
                         </h1>
 
-                        <!-- Join Button - Always visible -->
+                        <!-- Join Button - Only visible when registration is open -->
+                        @php
+                            $now = now();
+                            $isRegistrationOpen = $now >= $competition->registration_start && $now <= $competition->registration_end;
+                        @endphp
+
+                        @if($isRegistrationOpen)
                         <div class="w-full md:w-auto">
                             <button onclick="openJoinModal({{ $competition->id }})"
                                     class="w-full md:w-auto px-6 py-3 bg-green-600 text-white text-lg font-semibold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 flex items-center justify-center">
@@ -45,6 +51,7 @@
                                 {{ $competition->getRemainingSlots() }} slots remaining
                             </p>
                         </div>
+                        @endif
                     </div>
 
                     <!-- Competition Header -->
@@ -144,7 +151,18 @@
                     </div>
 
                     <!-- Social Media Links -->
-                    @if($competition->whatsapp_link || $competition->telegram_link || $competition->discord_link)
+                    @php
+                        $userTeams = auth()->user()->teams;
+                        $isRegistered = false;
+                        foreach ($userTeams as $userTeam) {
+                            if ($competition->teams->contains($userTeam->id)) {
+                                $isRegistered = true;
+                                break;
+                            }
+                        }
+                    @endphp
+
+                    @if($isRegistered && ($competition->whatsapp_link || $competition->telegram_link || $competition->discord_link))
                     <div class="mt-8">
                         <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Join Our Community</h2>
                         <div class="flex flex-wrap gap-4">
@@ -319,7 +337,7 @@
                     @endif
 
                     <!-- Registered Teams -->
-                    <div class="mt-8">
+                    {{-- <div class="mt-8">
                         <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Registered Teams</h2>
                         @if($competition->teams->count() > 0)
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -338,7 +356,7 @@
                         @else
                             <p class="text-gray-600 dark:text-gray-400">No teams have registered yet.</p>
                         @endif
-                    </div>
+                    </div> --}}
 
                     <!-- Add Tournament Bracket Section Here -->
                     <div class="mt-8">
@@ -456,6 +474,7 @@
                 @php
                     $userTeams = Auth::user()->teams()
                         ->where('leader_id', Auth::id())
+                        ->where('game', $competition->game_id)
                         ->get();
                 @endphp
 
@@ -485,7 +504,7 @@
                     </form>
                 @else
                     <div class="text-center px-7 py-3">
-                        <p class="text-gray-600 dark:text-gray-400 mb-4">You don't have any teams where you're the leader.</p>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">You don't have any teams for {{ $competition->game->name }} where you're the leader.</p>
                         <a href="{{ route('team.create') }}"
                            class="px-4 py-2 bg-green-600 text-white text-base font-medium rounded-md inline-block hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
                             Create a Team
@@ -504,6 +523,34 @@
         </div>
     </div>
 
+    <!-- Notification Modal -->
+    <div id="notificationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+            <div class="mt-3">
+                <div id="notificationIcon" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4">
+                    <!-- Success Icon -->
+                    <svg id="successIcon" class="h-12 w-12 text-green-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <!-- Error Icon -->
+                    <svg id="errorIcon" class="h-12 w-12 text-red-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h3 id="notificationTitle" class="text-lg font-medium text-gray-900 dark:text-white text-center mb-2"></h3>
+                <div id="notificationMessage" class="mt-2 px-7 py-3">
+                    <p id="notificationText" class="text-sm text-gray-500 dark:text-gray-400 text-center"></p>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button onclick="closeNotificationModal()"
+                            class="px-4 py-2 bg-blue-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         function openJoinModal(competitionId) {
             const modal = document.getElementById('joinModal');
@@ -518,6 +565,55 @@
         // Close modal when clicking outside
         window.onclick = function(event) {
             const modal = document.getElementById('joinModal');
+            if (event.target == modal) {
+                modal.classList.add('hidden');
+            }
+        }
+
+        // Show notification modal
+        function showNotificationModal(type, message) {
+            const modal = document.getElementById('notificationModal');
+            const successIcon = document.getElementById('successIcon');
+            const errorIcon = document.getElementById('errorIcon');
+            const title = document.getElementById('notificationTitle');
+            const text = document.getElementById('notificationText');
+
+            // Set icon and colors based on type
+            if (type === 'success') {
+                successIcon.classList.remove('hidden');
+                errorIcon.classList.add('hidden');
+                title.textContent = 'Success!';
+                title.classList.add('text-green-600');
+                title.classList.remove('text-red-600');
+            } else {
+                successIcon.classList.add('hidden');
+                errorIcon.classList.remove('hidden');
+                title.textContent = 'Error!';
+                title.classList.add('text-red-600');
+                title.classList.remove('text-green-600');
+            }
+
+            text.textContent = message;
+            modal.classList.remove('hidden');
+        }
+
+        function closeNotificationModal() {
+            const modal = document.getElementById('notificationModal');
+            modal.classList.add('hidden');
+        }
+
+        // Check for session messages and show notification
+        @if(session('success'))
+            showNotificationModal('success', '{{ session('success') }}');
+        @endif
+
+        @if(session('error'))
+            showNotificationModal('error', '{{ session('error') }}');
+        @endif
+
+        // Close notification modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('notificationModal');
             if (event.target == modal) {
                 modal.classList.add('hidden');
             }
