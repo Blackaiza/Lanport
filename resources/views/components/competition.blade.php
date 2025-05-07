@@ -44,7 +44,7 @@
 
                         <div class="mb-3">
                             <div class="prose prose-sm max-w-none dark:prose-invert">
-                                {!! Str::limit($competition->description, 100) !!}
+                                {!! Str::limit(strip_tags($competition->description), 50) !!}...
                             </div>
                         </div>
 
@@ -100,16 +100,9 @@
 
                         <div class="flex space-x-3">
                             <a href="{{ route('competition.show', $competition->id) }}"
-                               class="px-3 py-2 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                                More Details
+                               class="px-3 py-2 text-sm font-medium text-white {{ $competition->getStatus() === 'registration_open' ? 'bg-green-600 hover:bg-green-700 focus:ring-green-300 dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-800' : 'bg-blue-700 hover:bg-blue-800 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800' }} rounded-lg focus:ring-4 focus:outline-none">
+                                {{ $competition->getStatus() === 'registration_open' ? 'Join Competition Now' : 'More Details' }}
                             </a>
-                            @if($competition->getStatus() === 'registration_open' && $competition->getRemainingSlots() > 0)
-                                <button
-                                    onclick="openJoinModal({{ $competition->id }})"
-                                    class="px-3 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-800">
-                                    Join Competition
-                                </button>
-                            @endif
                         </div>
                     </div>
                 </div>
@@ -123,7 +116,7 @@
 </div>
 
 <!-- Modified Join Modal -->
-<div id="joinModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
+<div id="joinModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
         <div class="mt-3">
             <h3 class="text-lg font-medium text-gray-900 dark:text-white text-center mb-4">Join Competition</h3>
@@ -131,6 +124,7 @@
             @php
                 $userTeams = Auth::user()->teams()
                     ->where('leader_id', Auth::id())
+                    ->where('game', $competition->game_id)
                     ->get();
             @endphp
 
@@ -147,6 +141,9 @@
                                 <option value="{{ $team->id }}">{{ $team->name }}</option>
                             @endforeach
                         </select>
+                        @error('team_id')
+                            <p class="mt-1 text-sm text-red-500">{{ $message }}</p>
+                        @enderror
                     </div>
                     <div class="items-center px-4 py-3">
                         <button type="submit"
@@ -157,7 +154,7 @@
                 </form>
             @else
                 <div class="text-center px-7 py-3">
-                    <p class="text-gray-600 dark:text-gray-400 mb-4">You don't have any teams where you're the leader.</p>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">You don't have any teams for {{ $competition->game->name }} where you're the leader.</p>
                     <a href="{{ route('team.create') }}"
                        class="px-4 py-2 bg-green-600 text-white text-base font-medium rounded-md inline-block hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
                         Create a Team
@@ -172,6 +169,34 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </button>
+        </div>
+    </div>
+</div>
+
+<!-- Notification Modal -->
+<div id="notificationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+        <div class="mt-3">
+            <div id="notificationIcon" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4">
+                <!-- Success Icon -->
+                <svg id="successIcon" class="h-12 w-12 text-green-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <!-- Error Icon -->
+                <svg id="errorIcon" class="h-12 w-12 text-red-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <h3 id="notificationTitle" class="text-lg font-medium text-gray-900 dark:text-white text-center mb-2"></h3>
+            <div id="notificationMessage" class="mt-2 px-7 py-3">
+                <p id="notificationText" class="text-sm text-gray-500 dark:text-gray-400 text-center"></p>
+            </div>
+            <div class="items-center px-4 py-3">
+                <button onclick="closeNotificationModal()"
+                        class="px-4 py-2 bg-blue-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    Close
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -191,11 +216,56 @@ function closeJoinModal() {
     modal.classList.add('hidden');
 }
 
+// Show notification modal
+function showNotificationModal(type, message) {
+    const modal = document.getElementById('notificationModal');
+    const successIcon = document.getElementById('successIcon');
+    const errorIcon = document.getElementById('errorIcon');
+    const title = document.getElementById('notificationTitle');
+    const text = document.getElementById('notificationText');
+
+    // Set icon and colors based on type
+    if (type === 'success') {
+        successIcon.classList.remove('hidden');
+        errorIcon.classList.add('hidden');
+        title.textContent = 'Success!';
+        title.classList.add('text-green-600');
+        title.classList.remove('text-red-600');
+    } else {
+        successIcon.classList.add('hidden');
+        errorIcon.classList.remove('hidden');
+        title.textContent = 'Error!';
+        title.classList.add('text-red-600');
+        title.classList.remove('text-green-600');
+    }
+
+    text.textContent = message;
+    modal.classList.remove('hidden');
+}
+
+function closeNotificationModal() {
+    const modal = document.getElementById('notificationModal');
+    modal.classList.add('hidden');
+}
+
 // Close modal when clicking outside
 window.onclick = function(event) {
     const modal = document.getElementById('joinModal');
+    const notificationModal = document.getElementById('notificationModal');
     if (event.target == modal) {
         modal.classList.add('hidden');
     }
+    if (event.target == notificationModal) {
+        notificationModal.classList.add('hidden');
+    }
 }
+
+// Check for session messages and show notification
+@if(session('success'))
+    showNotificationModal('success', '{{ session('success') }}');
+@endif
+
+@if(session('error'))
+    showNotificationModal('error', '{{ session('error') }}');
+@endif
 </script>

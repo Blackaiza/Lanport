@@ -9,6 +9,7 @@ use App\Http\Controllers\CompetitionController;
 
 Route::get('/', WelcomeController::class)->name('home');
 Route::get('/blog', [PostController::class,'index'])->name('posts.index');
+Route::get('/blog/{post:slug}', [PostController::class,'show'])->name('posts.show');
 
 //Test
 Route::middleware([

@@ -29,7 +29,7 @@
                             <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $team->name }}</h2>
                             <div class="mt-2 space-y-2">
                                 <p class="text-gray-600 dark:text-gray-300">
-                                    <span class="font-semibold">Game:</span> {{ $team->game }}
+                                    <span class="font-semibold">Game:</span> {{ $team->game->name ?? $team->game }}
                                 </p>
                                 <p class="text-gray-600 dark:text-gray-300">
                                     <span class="font-semibold">Status:</span>

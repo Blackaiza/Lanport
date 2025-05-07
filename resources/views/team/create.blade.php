@@ -64,8 +64,9 @@
                             <select name="game" required
                                     class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-transparent dark:bg-gray-700 dark:text-white">
                                 <option value="">Select a game</option>
-                                <option value="Valorant">Valorant</option>
-                                <option value="Mobile Legends">Mobile Legends</option>
+                                @foreach(\App\Models\Game::all() as $game)
+                                    <option value="{{ $game->game_id }}">{{ $game->name }}</option>
+                                @endforeach
                             </select>
                             @error('game')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
