@@ -472,8 +472,11 @@
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white text-center mb-4">Join Competition</h3>
 
                 @php
-                    $userTeams = Auth::user()->teams()
-                        ->where('leader_id', Auth::id())
+                    $userTeamIds = \App\Models\TeamMember::where('user_id', Auth::id())
+                        ->whereIn('role', ['leader', 'co_leader'])
+                        ->pluck('team_id');
+
+                    $userTeams = \App\Models\Team::whereIn('id', $userTeamIds)
                         ->where('game', $competition->game_id)
                         ->get();
                 @endphp
@@ -504,7 +507,7 @@
                     </form>
                 @else
                     <div class="text-center px-7 py-3">
-                        <p class="text-gray-600 dark:text-gray-400 mb-4">You don't have any teams for {{ $competition->game->name }} where you're the leader.</p>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">You don't have any teams for {{ $competition->game->name }} where you're the leader or co-leader.</p>
                         <a href="{{ route('team.create') }}"
                            class="px-4 py-2 bg-green-600 text-white text-base font-medium rounded-md inline-block hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
                             Create a Team

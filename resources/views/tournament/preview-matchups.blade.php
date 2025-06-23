@@ -40,12 +40,12 @@
                 Teams must lose twice to be eliminated. Includes winners and losers brackets.
             </p>
         </div>
-    @else
+    {{-- @else
         <div class="mt-4 p-4 bg-green-50 dark:bg-green-900 rounded">
             <h4 class="font-medium text-green-700 dark:text-green-300">Round Robin Format</h4>
             <p class="mt-1 text-sm text-green-600 dark:text-green-400">
                 Each team plays against every other team once.
             </p>
         </div>
-    @endif
+    @endif --}}
 </div>
