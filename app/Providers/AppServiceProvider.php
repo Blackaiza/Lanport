@@ -27,7 +27,7 @@ class AppServiceProvider extends ServiceProvider
         try {
             Blade::component('tournament-bracket-single-elimination', \App\View\Components\TournamentBracketSingleElimination::class);
             Blade::component('tournament-bracket-double-elimination', \App\View\Components\TournamentBracketDoubleElimination::class);
-            Blade::component('tournament-bracket-round-robin', \App\View\Components\TournamentBracketRoundRobin::class);
+            // Blade::component('tournament-bracket-round-robin', \App\View\Components\TournamentBracketRoundRobin::class);
             Log::info('Tournament bracket components registered successfully');
         } catch (\Exception $e) {
             Log::error('Error registering tournament bracket components: ' . $e->getMessage());
