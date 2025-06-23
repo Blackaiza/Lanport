@@ -243,44 +243,30 @@
                 @if($teamRankings[$game->game_id]->isEmpty())
                     <p class="text-gray-500 dark:text-gray-400">No team rankings available yet.</p>
                 @else
-                    <div class="flex flex-col gap-4">
-                        @foreach ($teamRankings[$game->game_id] as $index => $ranking)
+                    <div class="flex flex-col gap-2">
+                        @foreach ($teamRankings[$game->game_id]->take(5) as $index => $ranking)
                             @php
-                                $rankClass = match($index) {
-                                    0 => 'bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-white', // Radiant
-                                    1 => 'bg-gradient-to-r from-[#FF4500] to-[#FF6347] text-white', // Immortal
-                                    2 => 'bg-gradient-to-r from-[#FF69B4] to-[#FF1493] text-white', // Ascendant
-                                    3 => 'bg-gradient-to-r from-[#00BFFF] to-[#1E90FF] text-white', // Diamond
-                                    4 => 'bg-gradient-to-r from-[#B0C4DE] to-[#87CEEB] text-white', // Platinum
-                                    5 => 'bg-gradient-to-r from-[#FFD700] to-[#DAA520] text-white', // Gold
-                                    6 => 'bg-gradient-to-r from-[#C0C0C0] to-[#A9A9A9] text-white', // Silver
-                                    7 => 'bg-gradient-to-r from-[#CD7F32] to-[#8B4513] text-white', // Bronze
-                                    8 => 'bg-gradient-to-r from-[#808080] to-[#696969] text-white', // Iron
-                                    default => 'bg-gray-100 dark:bg-gray-700'
-                                };
-                                $widthClass = match($index) {
-                                    0 => 'w-full',
-                                    1 => 'w-[95%]',
-                                    2 => 'w-[90%]',
-                                    3 => 'w-[85%]',
-                                    4 => 'w-[80%]',
-                                    5 => 'w-[75%]',
-                                    6 => 'w-[70%]',
-                                    7 => 'w-[65%]',
-                                    8 => 'w-[60%]',
-                                    default => 'w-[55%]'
+                                $bgClass = match($index) {
+                                    0 => 'bg-yellow-100 dark:bg-yellow-900', // Gold
+                                    1 => 'bg-gray-200 dark:bg-gray-700',     // Silver
+                                    2 => 'bg-orange-100 dark:bg-orange-900', // Bronze
+                                    default => 'bg-gray-50 dark:bg-gray-800',
                                 };
                             @endphp
-                            <div class="flex justify-center">
-                                <div class="p-4 rounded-lg shadow-md {{ $rankClass }} {{ $widthClass }} transition-all duration-300 hover:scale-105">
-                                    <div class="flex items-center justify-between">
-                                        <div>
-                                            <h4 class="font-semibold">{{ $ranking['team']->name }}</h4>
-                                            <p class="text-sm">Total Score: {{ $ranking['score'] }}</p>
-                                        </div>
-                                        <div class="text-2xl font-bold">#{{ $index + 1 }}</div>
-                                    </div>
+                            <div class="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 {{ $bgClass }}">
+                                <div class="mr-3">
+                                    @if($index == 0)
+                                        <span title="1st" class="text-2xl">&#x1F451;</span> {{-- Gold Crown --}}
+                                    @elseif($index == 1)
+                                        <span title="2nd" class="text-2xl">&#x1F948;</span> {{-- Silver Crown --}}
+                                    @elseif($index == 2)
+                                        <span title="3rd" class="text-2xl">&#x1F949;</span> {{-- Bronze Crown --}}
+                                    @else
+                                        <span class="text-lg font-bold min-w-[60px] text-right mr-2">Rank {{ $index + 1 }} :</span>
+                                    @endif
                                 </div>
+                                <div class="flex-1 font-semibold">{{ $ranking['team']->name }}</div>
+                                <div class="text-sm text-gray-600 dark:text-gray-300 ml-4">Total Score: <span class="font-bold">{{ $ranking['score'] }}</span></div>
                             </div>
                         @endforeach
                     </div>
@@ -293,64 +279,35 @@
                 @if($playerRankings[$game->game_id]->isEmpty())
                     <p class="text-gray-500 dark:text-gray-400">No individual rankings available yet.</p>
                 @else
-                    <div class="flex flex-col gap-4">
-                        @foreach ($playerRankings[$game->game_id] as $index => $ranking)
+                    <div class="flex flex-col gap-2">
+                        @foreach ($playerRankings[$game->game_id]->take(5) as $index => $ranking)
                             @php
-                                $rankClass = match($index) {
-                                    0 => 'bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-white', // Radiant
-                                    1 => 'bg-gradient-to-r from-[#FF4500] to-[#FF6347] text-white', // Immortal
-                                    2 => 'bg-gradient-to-r from-[#FF69B4] to-[#FF1493] text-white', // Ascendant
-                                    3 => 'bg-gradient-to-r from-[#00BFFF] to-[#1E90FF] text-white', // Diamond
-                                    4 => 'bg-gradient-to-r from-[#B0C4DE] to-[#87CEEB] text-white', // Platinum
-                                    5 => 'bg-gradient-to-r from-[#FFD700] to-[#DAA520] text-white', // Gold
-                                    6 => 'bg-gradient-to-r from-[#C0C0C0] to-[#A9A9A9] text-white', // Silver
-                                    7 => 'bg-gradient-to-r from-[#CD7F32] to-[#8B4513] text-white', // Bronze
-                                    8 => 'bg-gradient-to-r from-[#808080] to-[#696969] text-white', // Iron
-                                    default => 'bg-gray-100 dark:bg-gray-700'
-                                };
-                                $widthClass = match($index) {
-                                    0 => 'w-full',
-                                    1 => 'w-[95%]',
-                                    2 => 'w-[90%]',
-                                    3 => 'w-[85%]',
-                                    4 => 'w-[80%]',
-                                    5 => 'w-[75%]',
-                                    6 => 'w-[70%]',
-                                    7 => 'w-[65%]',
-                                    8 => 'w-[60%]',
-                                    default => 'w-[55%]'
+                                $bgClass = match($index) {
+                                    0 => 'bg-yellow-100 dark:bg-yellow-900', // Gold
+                                    1 => 'bg-gray-200 dark:bg-gray-700',     // Silver
+                                    2 => 'bg-orange-100 dark:bg-orange-900', // Bronze
+                                    default => 'bg-gray-50 dark:bg-gray-800',
                                 };
                             @endphp
-                            <div class="flex justify-center">
-                                <div class="p-4 rounded-lg shadow-md {{ $rankClass }} {{ $widthClass }} transition-all duration-300 hover:scale-105">
-                                    <div class="flex items-center justify-between">
-                                        <div>
-                                            <h4 class="font-semibold text-lg mb-2">{{ $ranking['player']->name }}</h4>
-                                            <div class="grid grid-cols-2 gap-x-4 gap-y-1">
-                                                <div class="flex items-center">
-                                                    <span class="text-emerald-400 font-medium">Kills:</span>
-                                                    <span class="ml-2">{{ $ranking['kills'] }}</span>
-                                                </div>
-                                                <div class="flex items-center">
-                                                    <span class="text-red-400 font-medium">Deaths:</span>
-                                                    <span class="ml-2">{{ $ranking['deaths'] }}</span>
-                                                </div>
-                                                <div class="flex items-center">
-                                                    <span class="text-blue-400 font-medium">Assists:</span>
-                                                    <span class="ml-2">{{ $ranking['assists'] }}</span>
-                                                </div>
-                                                <div class="flex items-center">
-                                                    <span class="font-bold">KDA:</span>
-                                                    <span class="ml-2 font-bold">{{ $ranking['kda'] }}</span>
-                                                </div>
-                                                <div class="flex items-center">
-                                                    <span class="font-bold">KD:</span>
-                                                    <span class="ml-2 font-bold">{{ $ranking['kd'] }}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="text-2xl font-bold ml-4">#{{ $index + 1 }}</div>
-                                    </div>
+                            <div class="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 {{ $bgClass }}">
+                                <div class="mr-3">
+                                    @if($index == 0)
+                                        <span title="1st" class="text-2xl">&#x1F451;</span> {{-- Gold Crown --}}
+                                    @elseif($index == 1)
+                                        <span title="2nd" class="text-2xl">&#x1F948;</span> {{-- Silver Crown --}}
+                                    @elseif($index == 2)
+                                        <span title="3rd" class="text-2xl">&#x1F949;</span> {{-- Bronze Crown --}}
+                                    @else
+                                        <span class="text-lg font-bold min-w-[60px] text-right mr-2">Rank {{ $index + 1 }} :</span>
+                                    @endif
+                                </div>
+                                <div class="flex-1 font-semibold">{{ $ranking['player']->name }}</div>
+                                <div class="flex flex-row flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-300 ml-4">
+                                    <span>Kills: <span class="font-bold">{{ $ranking['kills'] }}</span></span>
+                                    <span>Deaths: <span class="font-bold">{{ $ranking['deaths'] }}</span></span>
+                                    <span>Assists: <span class="font-bold">{{ $ranking['assists'] }}</span></span>
+                                    <span>KDA: <span class="font-bold">{{ $ranking['kda'] }}</span></span>
+                                    <span>KD: <span class="font-bold">{{ $ranking['kd'] }}</span></span>
                                 </div>
                             </div>
                         @endforeach
