@@ -471,15 +471,25 @@
             <div class="mt-3">
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white text-center mb-4">Join Competition</h3>
 
-                @php
-                    $userTeamIds = \App\Models\TeamMember::where('user_id', Auth::id())
-                        ->whereIn('role', ['leader', 'co_leader'])
-                        ->pluck('team_id');
+                           @php
+    $userId = Auth::id();
 
-                    $userTeams = \App\Models\Team::whereIn('id', $userTeamIds)
-                        ->where('game', $competition->game_id)
-                        ->get();
-                @endphp
+    $coLeaderTeamIds = \App\Models\TeamMember::where('user_id', $userId)
+        ->where('role', 'co_leader')
+        ->pluck('team_id')
+        ->toArray();
+
+    $leaderTeamIds = \App\Models\Team::where('leader_id', $userId)
+        ->pluck('id')
+        ->toArray();
+
+    $userTeamIds = array_unique(array_merge($coLeaderTeamIds, $leaderTeamIds));
+
+    $userTeams = \App\Models\Team::whereIn('id', $userTeamIds)
+        ->where('game', $competition->game_id)
+        ->get();
+@endphp
+
 
                 @if($userTeams->count() > 0)
                     <form id="joinCompetitionForm" action="{{ route('competition.join', $competition->id) }}" method="POST" class="mt-4">
