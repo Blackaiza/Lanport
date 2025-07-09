@@ -38,7 +38,7 @@ class TournamentResource extends Resource
                             ->options([
                                 'single_elimination' => 'Single Elimination',
                                 'double_elimination' => 'Double Elimination',
-                                'round_robin' => 'Round Robin',
+                                // 'round_robin' => 'Round Robin',
                             ])
                             ->required()
                             ->reactive()
@@ -56,7 +56,7 @@ class TournamentResource extends Resource
                                             'team2' => isset($teams[$i + 1]) ? $teams[$i + 1]->team->name : 'BYE',
                                         ];
                                     }
-                                    $set('preview_matchups', $matchups);
+                                    // $set('preview_matchups', $matchups);
                                 }
                             })
                             ->visible(fn ($record) => !$record->matches()->exists()),
@@ -542,14 +542,14 @@ class TournamentResource extends Resource
                     ->formatStateUsing(fn ($state): string => match ($state) {
                         'single_elimination' => 'Single Elimination',
                         'double_elimination' => 'Double Elimination',
-                        'round_robin' => 'Round Robin',
+                        // 'round_robin' => 'Round Robin',
                         default => $state ?? 'Not Set',
                     })
                     ->badge()
                     ->color(fn ($state): string => match ($state) {
                         'single_elimination' => 'success',
                         'double_elimination' => 'warning',
-                        'round_robin' => 'info',
+                        // 'round_robin' => 'info',
                         default => 'gray',
                     }),
                 Tables\Columns\TextColumn::make('status')
@@ -675,9 +675,9 @@ class TournamentResource extends Resource
             case 'double_elimination':
                 static::generateDoubleElimination($competition, $teams);
                 break;
-            case 'round_robin':
-                static::generateRoundRobin($competition, $teams);
-                break;
+            // case 'round_robin':
+            //     static::generateRoundRobin($competition, $teams);
+            //     break;
         }
 
         $competition->update(['status' => 'ongoing']);

@@ -18,7 +18,7 @@ class TeamCompetitionApproveResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
 
-    protected static ?string $navigationLabel = 'Competition Approvals';
+    protected static ?string $navigationLabel = 'Team Approvals';
 
     protected static ?string $navigationGroup = 'Competition Management';
 
