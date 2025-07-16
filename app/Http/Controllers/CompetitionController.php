@@ -49,8 +49,11 @@ class CompetitionController extends Controller
 
         // Check if user is team leader
         $team = Team::findOrFail($request->team_id);
-        if ($team->leader_id !== auth()->id()) {
-            return back()->with('error', 'You must be the team leader to join a competition.');
+        $userId = auth()->id();
+        $isLeader = $team->leader_id === $userId;
+        $isCoLeader = $team->members()->where('user_id', $userId)->wherePivot('role', 'co_leader')->exists();
+        if (!($isLeader || $isCoLeader)) {
+            return back()->with('error', 'You must be the team leader or co-leader to join a competition.');
         }
 
         // Check if team is already registered
