@@ -13,53 +13,41 @@ class DoubleEliminationFormat
     {
         $teams = $teams->shuffle();
         $numTeams = $teams->count();
-        $numUpperRounds = (int) ceil(log($numTeams, 2));
+        $numRounds = ceil(log($numTeams, 2));
+
         $matchNumber = 1;
         $matchDate = $competition->tournament_start;
+
+        // Store all first round matchups for notification
         $firstRoundMatchups = [];
 
-        // Generate Upper Bracket Rounds
-        $upperRounds = [];
-        for ($r = 1; $r <= $numUpperRounds; $r++) {
-            $roundName = $r === $numUpperRounds ? 'semi_finals' : 'upper_round_' . $r;
-            $numMatches = (int) ceil($numTeams / pow(2, $r));
-            $upperRounds[] = ['name' => $roundName, 'matches' => $numMatches];
-        }
-        // Add finals and grand finals
-        $upperRounds[] = ['name' => 'finals', 'matches' => 1];
-        $upperRounds[] = ['name' => 'grand_finals', 'matches' => 1];
+        // Generate Upper Bracket Round 1 matches with initial team assignments
+        $upperRound1Matches = [];
+        for ($i = 0; $i < $numTeams; $i += 2) {
+            $team1 = $teams[$i];
+            $team2 = isset($teams[$i + 1]) ? $teams[$i + 1] : null;
 
-        // Create matches for each upper round
-        $teamIdx = 0;
-        foreach ($upperRounds as $idx => $round) {
-            for ($m = 1; $m <= $round['matches']; $m++) {
-                $team1 = null;
-                $team2 = null;
-                if ($idx == 0) { // First round: assign teams
-                    $team1 = $teams[$teamIdx] ?? null;
-                    $team2 = $teams[$teamIdx + 1] ?? null;
-                    $teamIdx += 2;
-                }
-                TournamentMatch::create([
-                    'competition_id' => $competition->id,
-                    'round' => $round['name'],
-                    'match_number' => $m,
-                    'team1_id' => $team1?->id,
-                    'team2_id' => $team2?->id,
-                    'scheduled_at' => $idx == 0 ? $matchDate : null,
-                    'bracket_position' => $m,
-                    'tournament_type' => 'double_elimination',
-                    'bracket' => str_contains($round['name'], 'upper') ? 'upper' : ($round['name'] === 'semi_finals' ? 'semi' : $round['name']),
-                ]);
-                if ($idx == 0) {
-                    $firstRoundMatchups[] = [
-                        'match_number' => $m,
-                        'team1' => $team1?->team->name ?? 'BYE',
-                        'team2' => $team2?->team->name ?? 'BYE',
-                    ];
-                    $matchDate = $matchDate->addHours(2);
-                }
-            }
+            $match = TournamentMatch::create([
+                'competition_id' => $competition->id,
+                'round' => 'upper_round_1',
+                'match_number' => $matchNumber,
+                'team1_id' => $team1->id,
+                'team2_id' => $team2?->id,
+                'scheduled_at' => $matchDate,
+                'bracket_position' => $matchNumber,
+                'tournament_type' => 'double_elimination',
+                'bracket' => 'upper'
+            ]);
+
+            $upperRound1Matches[] = $match;
+            $firstRoundMatchups[] = [
+                'match_number' => $matchNumber,
+                'team1' => $team1->team->name,
+                'team2' => $team2?->team->name ?? 'BYE'
+            ];
+
+            $matchNumber++;
+            $matchDate = $matchDate->addHours(2);
         }
 
         // Send notifications for all first round matchups
@@ -67,52 +55,120 @@ class DoubleEliminationFormat
         foreach ($firstRoundMatchups as $matchup) {
             $matchupMessage .= "Match {$matchup['match_number']}: {$matchup['team1']} vs {$matchup['team2']}\n";
         }
+
         Notification::make()
             ->title('Tournament Matchups Set')
             ->body($matchupMessage)
             ->success()
             ->send();
 
-        // Generate Lower Bracket Rounds dynamically
-        $numLowerRounds = $numUpperRounds - 1;
-        for ($r = 1; $r <= $numLowerRounds; $r++) {
-            $roundName = 'lower_round_' . $r;
-            $numMatches = (int) ceil($numTeams / pow(2, $r + 1));
-            for ($m = 1; $m <= $numMatches; $m++) {
-                TournamentMatch::create([
-                    'competition_id' => $competition->id,
-                    'round' => $roundName,
-                    'match_number' => $m,
-                    'scheduled_at' => null,
-                    'bracket_position' => $m,
-                    'tournament_type' => 'double_elimination',
-                    'bracket' => 'lower',
-                ]);
-            }
-        }
-        // Add lower semi finals and lower finals if needed
-        if ($numTeams > 4) {
+        // Calculate number of matches for each round
+        $numUpperRound1Matches = count($upperRound1Matches);
+        $numUpperRound2Matches = ceil($numUpperRound1Matches / 2);
+        $numUpperQuarterFinals = ceil($numUpperRound2Matches / 2);
+        $numSemiFinals = ceil($numUpperQuarterFinals / 2);
+
+        // Generate Lower Round 1 matches (half of Upper Round 1 matches)
+        $numLowerRound1Matches = ceil($numUpperRound1Matches / 2);
+        for ($match = 1; $match <= $numLowerRound1Matches; $match++) {
             TournamentMatch::create([
                 'competition_id' => $competition->id,
-                'round' => 'lower_semi_finals',
-                'match_number' => 1,
+                'round' => 'lower_round_1',
+                'match_number' => $match,
                 'scheduled_at' => null,
-                'bracket_position' => 1,
+                'bracket_position' => $match,
                 'tournament_type' => 'double_elimination',
-                'bracket' => 'lower',
+                'bracket' => 'lower'
             ]);
         }
-        if ($numTeams > 2) {
+
+        // Generate Upper Round 2 matches
+        for ($match = 1; $match <= $numUpperRound2Matches; $match++) {
             TournamentMatch::create([
                 'competition_id' => $competition->id,
-                'round' => 'lower_finals',
-                'match_number' => 1,
+                'round' => 'upper_round_2',
+                'match_number' => $match,
                 'scheduled_at' => null,
-                'bracket_position' => 1,
+                'bracket_position' => $match,
                 'tournament_type' => 'double_elimination',
-                'bracket' => 'lower',
+                'bracket' => 'upper'
             ]);
         }
+
+        // Generate Lower Round 2 matches (same as Lower Round 1 matches)
+        for ($match = 1; $match <= $numLowerRound1Matches; $match++) {
+            TournamentMatch::create([
+                'competition_id' => $competition->id,
+                'round' => 'lower_round_2',
+                'match_number' => $match,
+                'scheduled_at' => null,
+                'bracket_position' => $match,
+                'tournament_type' => 'double_elimination',
+                'bracket' => 'lower'
+            ]);
+        }
+
+        // Generate Upper Quarter Finals matches
+        for ($match = 1; $match <= $numUpperQuarterFinals; $match++) {
+            TournamentMatch::create([
+                'competition_id' => $competition->id,
+                'round' => 'upper_quarter_finals',
+                'match_number' => $match,
+                'scheduled_at' => null,
+                'bracket_position' => $match,
+                'tournament_type' => 'double_elimination',
+                'bracket' => 'upper'
+            ]);
+        }
+
+        // Generate Lower Quarter Finals matches
+        $numLowerQuarterFinals = ceil($numLowerRound1Matches / 2);
+        for ($match = 1; $match <= $numLowerQuarterFinals; $match++) {
+            TournamentMatch::create([
+                'competition_id' => $competition->id,
+                'round' => 'lower_quarter_finals',
+                'match_number' => $match,
+                'scheduled_at' => null,
+                'bracket_position' => $match,
+                'tournament_type' => 'double_elimination',
+                'bracket' => 'lower'
+            ]);
+        }
+
+        // Generate Semi Finals matches
+        for ($match = 1; $match <= $numSemiFinals; $match++) {
+            TournamentMatch::create([
+                'competition_id' => $competition->id,
+                'round' => 'semi_finals',
+                'match_number' => $match,
+                'scheduled_at' => null,
+                'bracket_position' => $match,
+                'tournament_type' => 'double_elimination',
+                'bracket' => 'semi'
+            ]);
+        }
+
+        // Generate Finals match
+        TournamentMatch::create([
+            'competition_id' => $competition->id,
+            'round' => 'finals',
+            'match_number' => 1,
+            'scheduled_at' => null,
+            'bracket_position' => 1,
+            'tournament_type' => 'double_elimination',
+            'bracket' => 'finals'
+        ]);
+
+        // Generate Grand Finals match
+        TournamentMatch::create([
+            'competition_id' => $competition->id,
+            'round' => 'grand_finals',
+            'match_number' => 1,
+            'scheduled_at' => null,
+            'bracket_position' => 1,
+            'tournament_type' => 'double_elimination',
+            'bracket' => 'grand_finals'
+        ]);
     }
 
     public static function completeRound(Competition $competition, string $round, ?int $numTeams = null)
