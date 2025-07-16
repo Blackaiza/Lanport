@@ -83,8 +83,8 @@ class GameScoreResource extends Resource
                                     return [];
                                 }
 
-                                $team = Team::with('players')->find($teamId);
-                                return $team && $team->players ? $team->players->pluck('name', 'id') : [];
+                                $team = Team::with('members')->find($teamId);
+                                return $team && $team->members ? $team->members->pluck('name', 'id') : [];
                             })
                             ->required(),
 
