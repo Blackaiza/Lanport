@@ -23,10 +23,18 @@
 
             // Get the grand finals match and winner if exists
             $grandFinalsMatch = $matches->where('round', 'grand_finals')->first();
-            $winner = $grandFinalsMatch && $grandFinalsMatch->winner_id ? $grandFinalsMatch->winner : null;
+            $finalsMatch = $matches->where('round', 'finals')->first();
+            $semiFinalsMatch = $matches->where('round', 'semi_finals')->first();
+            $champion = null;
+            if ($grandFinalsMatch && $grandFinalsMatch->winner_id) {
+                $champion = $grandFinalsMatch->winner;
+            } elseif ($finalsMatch && $finalsMatch->winner_id) {
+                // Only show finals winner as champion if grand finals was not played or not needed
+                $champion = $finalsMatch->winner;
+            }
         @endphp
 
-        @if($winner)
+        @if($champion)
             <div class="mb-8">
                 <div class="p-4 bg-yellow-100 dark:bg-yellow-900 rounded-lg shadow-md">
                     <h3 class="text-xl font-bold text-yellow-800 dark:text-yellow-200 flex items-center justify-between">
@@ -35,12 +43,16 @@
                     </h3>
                     <div class="mt-4">
                         <div class="text-2xl font-bold text-yellow-700 dark:text-yellow-300 flex items-center justify-center">
-                            {{ $winner->team_name }}
+                            {{ $champion->team_name }}
                             <span class="ml-2">👑</span>
                         </div>
-                        @if($grandFinalsMatch->team1_score !== null && $grandFinalsMatch->team2_score !== null)
+                        @if(($grandFinalsMatch && $grandFinalsMatch->winner_id) && $grandFinalsMatch->team1_score !== null && $grandFinalsMatch->team2_score !== null)
                         <div class="mt-2 text-center text-yellow-600 dark:text-yellow-400">
                             Final Score: {{ $grandFinalsMatch->team1_score }} - {{ $grandFinalsMatch->team2_score }}
+                        </div>
+                        @elseif($finalsMatch && $finalsMatch->winner_id && $finalsMatch->team1_score !== null && $finalsMatch->team2_score !== null)
+                        <div class="mt-2 text-center text-yellow-600 dark:text-yellow-400">
+                            Final Score: {{ $finalsMatch->team1_score }} - {{ $finalsMatch->team2_score }}
                         </div>
                         @endif
                     </div>
