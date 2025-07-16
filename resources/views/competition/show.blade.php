@@ -38,30 +38,19 @@
                             $isRegistrationOpen = $now >= $competition->registration_start && $now <= $competition->registration_end;
                             $remainingSlots = $competition->getRemainingSlots();
 
-                            // Find the user's team for this competition (leader or co-leader)
-                            $userId = auth()->id();
-                            $coLeaderTeamIds = \App\Models\TeamMember::where('user_id', $userId)
-                                ->where('role', 'co_leader')
-                                ->pluck('team_id')
-                                ->toArray();
-                            $leaderTeamIds = \App\Models\Team::where('leader_id', $userId)
-                                ->pluck('id')
-                                ->toArray();
-                            $userTeamIds = array_unique(array_merge($coLeaderTeamIds, $leaderTeamIds));
-                            $userTeams = \App\Models\Team::whereIn('id', $userTeamIds)
-                                ->where('game', $competition->game_id)
-                                ->get();
+                            // Get all team IDs registered for this competition
+                            $registeredTeamIds = $competition->teams->pluck('id')->toArray();
 
-                            // Find the user's team that is registered for this competition
+                            // Find if the current user is a member of any registered team
+                            $userId = auth()->id();
+                            $userTeamMember = \App\Models\TeamMember::where('user_id', $userId)
+                                ->whereIn('team_id', $registeredTeamIds)
+                                ->first();
                             $userRegisteredTeam = null;
                             $userTeamStatus = null;
-                            foreach ($userTeams as $team) {
-                                $pivot = $competition->teams->firstWhere('id', $team->id)?->pivot;
-                                if ($pivot) {
-                                    $userRegisteredTeam = $team;
-                                    $userTeamStatus = $pivot->status;
-                                    break;
-                                }
+                            if ($userTeamMember) {
+                                $userRegisteredTeam = $competition->teams->firstWhere('id', $userTeamMember->team_id);
+                                $userTeamStatus = $userRegisteredTeam?->pivot?->status;
                             }
                         @endphp
 
