@@ -36,21 +36,63 @@
                         @php
                             $now = now();
                             $isRegistrationOpen = $now >= $competition->registration_start && $now <= $competition->registration_end;
+                            $remainingSlots = $competition->getRemainingSlots();
+
+                            // Find the user's team for this competition (leader or co-leader)
+                            $userId = auth()->id();
+                            $coLeaderTeamIds = \App\Models\TeamMember::where('user_id', $userId)
+                                ->where('role', 'co_leader')
+                                ->pluck('team_id')
+                                ->toArray();
+                            $leaderTeamIds = \App\Models\Team::where('leader_id', $userId)
+                                ->pluck('id')
+                                ->toArray();
+                            $userTeamIds = array_unique(array_merge($coLeaderTeamIds, $leaderTeamIds));
+                            $userTeams = \App\Models\Team::whereIn('id', $userTeamIds)
+                                ->where('game', $competition->game_id)
+                                ->get();
+
+                            // Find the user's team that is registered for this competition
+                            $userRegisteredTeam = null;
+                            $userTeamStatus = null;
+                            foreach ($userTeams as $team) {
+                                $pivot = $competition->teams->firstWhere('id', $team->id)?->pivot;
+                                if ($pivot) {
+                                    $userRegisteredTeam = $team;
+                                    $userTeamStatus = $pivot->status;
+                                    break;
+                                }
+                            }
                         @endphp
 
                         @if($isRegistrationOpen)
-                        <div class="w-full md:w-auto">
-                            <button onclick="openJoinModal({{ $competition->id }})"
-                                    class="w-full md:w-auto px-6 py-3 bg-green-600 text-white text-lg font-semibold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 flex items-center justify-center">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                                </svg>
-                                Join Competition
-                            </button>
-                            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 text-center md:text-right">
-                                {{ $competition->getRemainingSlots() }} slots remaining
-                            </p>
-                        </div>
+                            @if($remainingSlots > 0 && !$userRegisteredTeam)
+                                <div class="w-full md:w-auto">
+                                    <button onclick="openJoinModal({{ $competition->id }})"
+                                            class="w-full md:w-auto px-6 py-3 bg-green-600 text-white text-lg font-semibold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 flex items-center justify-center">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                        </svg>
+                                        Join Competition
+                                    </button>
+                                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 text-center md:text-right">
+                                        {{ $competition->getRemainingSlots() }} slots remaining
+                                    </p>
+                                </div>
+                            @elseif($userRegisteredTeam && $userTeamStatus === 'pending')
+                                <div class="w-full md:w-auto">
+                                    <button disabled
+                                            class="w-full md:w-auto px-6 py-3 bg-yellow-400 text-white text-lg font-semibold rounded-lg cursor-not-allowed flex items-center justify-center">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        Pending
+                                    </button>
+                                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 text-center md:text-right">
+                                        Waiting for approval
+                                    </p>
+                                </div>
+                            @endif
                         @endif
                     </div>
 
@@ -152,17 +194,13 @@
 
                     <!-- Social Media Links -->
                     @php
-                        $userTeams = auth()->user()->teams;
-                        $isRegistered = false;
-                        foreach ($userTeams as $userTeam) {
-                            if ($competition->teams->contains($userTeam->id)) {
-                                $isRegistered = true;
-                                break;
-                            }
+                        $showSocialMedia = false;
+                        if ($userRegisteredTeam && $userTeamStatus === 'approved') {
+                            $showSocialMedia = true;
                         }
                     @endphp
 
-                    @if($isRegistered && ($competition->whatsapp_link || $competition->telegram_link || $competition->discord_link))
+                    @if($showSocialMedia && ($competition->whatsapp_link || $competition->telegram_link || $competition->discord_link))
                     <div class="mt-8">
                         <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">Join Our Community</h2>
                         <div class="flex flex-wrap gap-4">
