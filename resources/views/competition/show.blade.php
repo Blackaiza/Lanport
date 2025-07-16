@@ -52,10 +52,30 @@
                                 $userRegisteredTeam = $competition->teams->firstWhere('id', $userTeamMember->team_id);
                                 $userTeamStatus = $userRegisteredTeam?->pivot?->status;
                             }
+
+                            // For join button: get all teams where user is leader or co-leader and not yet registered
+                            $coLeaderTeamIds = \App\Models\TeamMember::where('user_id', $userId)
+                                ->where('role', 'co_leader')
+                                ->pluck('team_id')
+                                ->toArray();
+                            $leaderTeamIds = \App\Models\Team::where('leader_id', $userId)
+                                ->pluck('id')
+                                ->toArray();
+                            $userTeamIdsForJoin = array_unique(array_merge($coLeaderTeamIds, $leaderTeamIds));
+                            $userTeamsForJoin = \App\Models\Team::whereIn('id', $userTeamIdsForJoin)
+                                ->where('game', $competition->game_id)
+                                ->get();
+                            $hasJoinableTeam = false;
+                            foreach ($userTeamsForJoin as $team) {
+                                if (!in_array($team->id, $registeredTeamIds)) {
+                                    $hasJoinableTeam = true;
+                                    break;
+                                }
+                            }
                         @endphp
 
                         @if($isRegistrationOpen)
-                            @if($remainingSlots > 0 && !$userRegisteredTeam)
+                            @if($remainingSlots > 0 && !$userRegisteredTeam && $hasJoinableTeam)
                                 <div class="w-full md:w-auto">
                                     <button onclick="openJoinModal({{ $competition->id }})"
                                             class="w-full md:w-auto px-6 py-3 bg-green-600 text-white text-lg font-semibold rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 flex items-center justify-center">
