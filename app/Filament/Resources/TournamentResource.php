@@ -376,9 +376,9 @@ class TournamentResource extends Resource
                                         } else if ($round === 'lower_quarter_finals') {
                                             // Lower Quarter Finals become active after Upper Quarter Finals is completed
                                             $isActive = in_array('upper_quarter_finals', $completedRounds) && !$isCompleted;
-                                        } else if ($round === 'lower_semi_finals') {
-                                            // Lower Semi Finals become active after Upper Semi Finals is completed
-                                            $isActive = in_array('upper_semi_finals', $completedRounds) && !$isCompleted;
+                                        } else if ($round === 'semi_finals') {
+                                            // Lower Semi Finals become active after Lower Quarter Finals is completed
+                                            $isActive = in_array('lower_quarter_finals', $completedRounds) && !$isCompleted;
                                         } else {
                                             $isActive = $upperRoundCompleted && !$isCompleted;
                                         }
@@ -390,27 +390,27 @@ class TournamentResource extends Resource
                                         } else if ($round === 'upper_quarter_finals') {
                                             // Upper Quarter Finals become active after Upper Round 2 is completed
                                             $isActive = in_array('upper_round_2', $completedRounds) && !$isCompleted;
-                                        } else if ($round === 'upper_semi_finals') {
-                                            // Upper Semi Finals become active after Upper Quarter Finals is completed
+                                        } else if ($round === 'semi_finals') {
+                                            // Semi Finals become active after Upper Quarter Finals is completed
                                             $isActive = in_array('upper_quarter_finals', $completedRounds) && !$isCompleted;
                                         } else if ($round === 'finals') {
                                             // Finals become active after Semi Finals is completed
                                             $isActive = in_array('semi_finals', $completedRounds) && !$isCompleted;
                                         } else if ($round === 'grand_finals') {
-                                            // Grand Finals become active if the winner of Upper Semi Finals loses in Finals
+                                            // Grand Finals become active if the winner of Semi Finals loses in Finals
                                             $finalsMatch = TournamentMatch::where('competition_id', $record->id)
                                                 ->where('round', 'finals')
                                                 ->first();
 
-                                            $upperSemiFinalsWinner = TournamentMatch::where('competition_id', $record->id)
-                                                ->where('round', 'upper_semi_finals')
+                                            $semiFinalsWinner = TournamentMatch::where('competition_id', $record->id)
+                                                ->where('round', 'semi_finals')
                                                 ->whereNotNull('winner_id')
                                                 ->first();
 
-                                            $isActive = $finalsMatch &&
-                                                       $upperSemiFinalsWinner &&
-                                                       $finalsMatch->winner_id !== $upperSemiFinalsWinner->winner_id &&
-                                                       !$isCompleted;
+                                            $isActive = false;
+                                            if ($finalsMatch && $semiFinalsWinner) {
+                                                $isActive = $finalsMatch->winner_id !== $semiFinalsWinner->winner_id && !$isCompleted;
+                                            }
                                         } else if ($round === 'upper_round_1') {
                                             // Upper Round 1 is active if it's the first round or if no rounds are completed
                                             $isActive = empty($completedRounds) ||
