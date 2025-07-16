@@ -397,7 +397,7 @@ class TournamentResource extends Resource
                                             // Finals become active after Semi Finals is completed
                                             $isActive = in_array('semi_finals', $completedRounds) && !$isCompleted;
                                         } else if ($round === 'grand_finals') {
-                                            // Grand Finals become active if the winner of Semi Finals loses in Finals
+                                            // Grand Finals become active ONLY if the winner of Finals is different from the winner of Semi Finals
                                             $finalsMatch = TournamentMatch::where('competition_id', $record->id)
                                                 ->where('round', 'finals')
                                                 ->first();
@@ -409,7 +409,11 @@ class TournamentResource extends Resource
 
                                             $isActive = false;
                                             if ($finalsMatch && $semiFinalsWinner) {
+                                                // Only enable Grand Finals if the winners are different
                                                 $isActive = $finalsMatch->winner_id !== $semiFinalsWinner->winner_id && !$isCompleted;
+                                            } else {
+                                                // If finals not played or semi finals not played, do not enable Grand Finals
+                                                $isActive = false;
                                             }
                                         } else if ($round === 'upper_round_1') {
                                             // Upper Round 1 is active if it's the first round or if no rounds are completed
